@@ -56,7 +56,7 @@ Resources:
                 S3Key:
                     !Sub ${Stack}/${Stage}/repo-apocalypse/repo-apocalypse.zip
             Description: github-project-archiver
-            Handler: com.gu.repoapocalypse.Lambda::handleRequest
+            Handler: com.gu.repoapocalypse.Lambda::archive
             MemorySize: 256
             Role:
                 Fn::GetAtt:

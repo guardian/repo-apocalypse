@@ -37,7 +37,9 @@ addCommandAlias("dist", ";riffRaffArtifact")
 resolvers += "Sonatype releases" at "https://oss.sonatype.org/content/repositories/releases"
 
 libraryDependencies ++= Seq(
-  "com.amazonaws" % "aws-lambda-java-core" % "1.1.0"
+  "com.amazonaws" % "aws-lambda-java-core" % "1.1.0",
+  "org.eclipse.jgit" % "org.eclipse.jgit" % "4.7.1.201706071930-r",
+  "com.47deg" %% "github4s" % "0.15.0"
 )
 
 initialize := {
