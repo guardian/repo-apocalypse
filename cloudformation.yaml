@@ -1,0 +1,72 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: AWS Lambda - github-project-archiver
+Parameters:
+    Stack:
+        Description: Stack name
+        Type: String
+        Default: deploy-tools
+    App:
+        Description: Application name
+        Type: String
+        Default: repo-apocalypse
+    Stage:
+        Description: Stage name
+        Type: String
+        AllowedValues:
+            - PROD
+            - CODE
+        Default: CODE
+
+Resources:
+    Repo-apocalypseRole:
+        Type: AWS::IAM::Role
+        Properties:
+            AssumeRolePolicyDocument:
+                Statement:
+                    - Effect: Allow
+                      Principal:
+                          Service:
+                             - lambda.amazonaws.com
+                      Action:
+                          - sts:AssumeRole
+            Path: /
+            Policies:
+                - PolicyName: LambdaPolicy
+                  PolicyDocument:
+                      Statement:
+                          - Effect: Allow
+                            Action:
+                                - logs:CreateLogGroup
+                                - logs:CreateLogStream
+                                - logs:PutLogEvents
+                                - lambda:InvokeFunction
+                            Resource: "*"
+
+    Lambda:
+        Type: AWS::Lambda::Function
+        Properties:
+            FunctionName:
+                !Sub repo-apocalypse-${Stage}
+            Environment:
+                Variables:
+                # Add your config/environment variables here.
+
+            Code:
+                S3Bucket: deploy-tools-dist
+                S3Key:
+                    !Sub ${Stack}/${Stage}/repo-apocalypse/repo-apocalypse.zip
+            Description: github-project-archiver
+            Handler: com.gu.repoapocalypse.Lambda::handleRequest
+            MemorySize: 256
+            Role:
+                Fn::GetAtt:
+                - Repo-apocalypseRole
+                - Arn
+            Runtime: java8
+            Timeout: 300
+
+    #
+    # Add your Lambda trigger rule and permissions here.
+    #
+    #
+    #

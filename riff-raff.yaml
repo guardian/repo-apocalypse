@@ -1,0 +1,17 @@
+stacks:
+- CHANGE_ME-repo-apocalypse
+regions:
+- eu-west-1
+deployments:
+  repo-apocalypse:
+    type: aws-lambda
+    parameters:
+      fileName: repo-apocalypse.zip
+      bucket: CHANGE_ME-dist
+      functions:
+        CODE:
+          name: repo-apocalypse-CODE
+          filename: repo-apocalypse.zip
+        PROD:
+          name: repo-apocalypse-PROD
+          filename: repo-apocalypse.zip
