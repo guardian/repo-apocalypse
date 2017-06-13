@@ -27,17 +27,17 @@ enablePlugins(RiffRaffArtifact, JavaAppPackaging)
 topLevelDirectory in Universal := None
 packageName in Universal := normalizedName.value
 
-riffRaffPackageType := (packageZipTarball in config("universal")).value
+riffRaffPackageType := (dist in Universal).value
 riffRaffUploadArtifactBucket := Option("riffraff-artifact")
 riffRaffUploadManifestBucket := Option("riffraff-builds")
 riffRaffManifestProjectName := "repo-apocalypse"
-
-addCommandAlias("dist", ";riffRaffArtifact")
 
 resolvers += "Sonatype releases" at "https://oss.sonatype.org/content/repositories/releases"
 
 libraryDependencies ++= Seq(
   "com.amazonaws" % "aws-lambda-java-core" % "1.1.0",
+  "com.amazonaws.serverless" % "aws-serverless-java-container-core" % "0.4",
+  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.144",
   "org.eclipse.jgit" % "org.eclipse.jgit" % "4.7.1.201706071930-r",
   "com.47deg" %% "github4s" % "0.15.0"
 )
