@@ -20,6 +20,9 @@ Parameters:
     DeployBucket:
         Description: Bucket to download Lambda from
         Type: String
+    TargetBucket:
+        Description: Bucket to upload archived repositories to
+        Type: String
 
 Resources:
   Lambda:
@@ -42,6 +45,17 @@ Resources:
             Path: /archive
             Method: POST
             RestApiId: !Ref API
+      Policies:
+      - Version: 2012-10-17
+        Statement:
+        - Effect: Allow
+          Action:
+          - s3:PutObject
+          Resource: !Sub arn:aws:s3:::${TargetBucket}/*
+      Environment:
+        Variables:
+          BUCKET_NAME: !Ref TargetBucket
+
 
   API:
     Type: AWS::Serverless::Api

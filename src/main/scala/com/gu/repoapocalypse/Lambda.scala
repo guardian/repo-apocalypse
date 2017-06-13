@@ -3,12 +3,16 @@ package com.gu.repoapocalypse
 import java.nio.file.{ Files, Path, Paths }
 import java.util.zip.{ ZipEntry, ZipOutputStream }
 
+import com.amazonaws.regions.Regions
 import com.amazonaws.serverless.proxy.internal.model.{ AwsProxyRequest, AwsProxyResponse }
+import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import org.eclipse.jgit.api.Git
 
 import scala.util.{ Failure, Success, Try }
 
 object Lambda {
+  val client = AmazonS3ClientBuilder.standard().withRegion(Regions.EU_WEST_1).build()
+
   def respond(req: AwsProxyRequest): AwsProxyResponse = {
     val maybeRepoName = Option(req.getBody).flatMap {
       b =>
@@ -20,6 +24,11 @@ object Lambda {
     val archiveResult = maybeRepoName.map { name =>
       Try { archive(name) }
     }
+
+    println(sys.env)
+
+    val bucketName = sys.env.get("BUCKET_NAME")
+
     val response = new AwsProxyResponse()
     archiveResult.fold {
       response.setStatusCode(400)
@@ -27,7 +36,10 @@ object Lambda {
     } {
       case Success(r) => {
         response.setStatusCode(200)
-        response.setBody(s"Archived to $r")
+        bucketName.foreach { name =>
+          client.putObject(name, r.getFileName.toString, r.toFile)
+          response.setBody(s"Archived to s3://$name/${r.getFileName}")
+        }
       }
       case Failure(e) => {
         response.setStatusCode(500)
@@ -37,9 +49,9 @@ object Lambda {
     response
   }
 
-  def archive(repoName: String): String = {
+  def archive(repoName: String): Path = {
     val tmpLocation: Path = cloneRepo(repoName)
-    zipAll(tmpLocation, Paths.get(s"/tmp/${repoName}.zip")).toString
+    zipAll(tmpLocation, Paths.get(s"/tmp/${repoName}.zip"))
   }
 
   def cloneRepo(repoName: String): Path = {
