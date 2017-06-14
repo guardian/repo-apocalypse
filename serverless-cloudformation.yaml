@@ -23,6 +23,10 @@ Parameters:
     TargetBucket:
         Description: Bucket to upload archived repositories to
         Type: String
+    GithubClientId:
+        Type: String
+    GithubClientSecret:
+        Type: String
 
 Resources:
   Lambda:
@@ -35,15 +39,15 @@ Resources:
         Key: !Sub ${Stack}/${Stage}/repo-apocalypse/repo-apocalypse.zip
       Description: github-project-archiver
       Handler: com.gu.repoapocalypse.Lambda::respond
-      MemorySize: 256
+      MemorySize: 512
       Runtime: java8
       Timeout: 300
       Events:
-        ArchiveApi:
+        Api:
           Type: Api
           Properties:
-            Path: /archive
-            Method: POST
+            Path: /{proxy+}
+            Method: ANY
             RestApiId: !Ref API
       Policies:
       - Version: 2012-10-17
@@ -55,6 +59,8 @@ Resources:
       Environment:
         Variables:
           BUCKET_NAME: !Ref TargetBucket
+          CLIENT_ID: !Ref GithubClientId
+          CLIENT_SECRET: !Ref GithubClientSecret
 
 
   API:
@@ -66,11 +72,10 @@ Resources:
         info:
           title: !Ref AWS::StackName
         paths:
-          "/archive":
-            post:
+          "/{proxy+}":
+            x-amazon-apigateway-any-method:
               x-amazon-apigateway-integration:
                 httpMethod: POST
                 type: aws_proxy
                 uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Lambda.Arn}/invocations
               responses: {}
-
