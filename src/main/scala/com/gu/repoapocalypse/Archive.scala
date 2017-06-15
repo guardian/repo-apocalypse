@@ -13,20 +13,12 @@ object Archive {
   val client = AmazonS3ClientBuilder.standard().withRegion(Regions.EU_WEST_1).build()
   val PARAM_NAME = "repoName"
 
-  def archive(requestBody: Option[String]): Either[Error, String] = {
-    val repoName = requestBody.flatMap { b =>
-      b.split('=').toList match {
-        case PARAM_NAME :: repoName :: Nil => Some(repoName)
-        case _ => None
-      }
-    }.toRight(MissingParameterError(PARAM_NAME))
-
+  def archive(repoName: String): Either[Error, String] = {
     val bucketName = sys.env.get("BUCKET_NAME").toRight(MissingEnvError("BUCKET_NAME"))
 
     for {
       bucket <- bucketName
-      repo <- repoName
-      cloneDirectory <- cloneRepo(repo)
+      cloneDirectory <- cloneRepo(repoName)
       file <- zipAll(cloneDirectory, Paths.get(s"/tmp/${repoName}.zip"))
       uploadLocation <- upload(bucket, file)
     } yield uploadLocation
