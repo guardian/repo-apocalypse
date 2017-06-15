@@ -34,7 +34,6 @@ object Lambda {
         formData.getFirst("repoName").map(repoName =>
           Archive.archive(repoName).fold(
             {
-              case MissingParameterError(param) => BadRequest(s"Missing required param $param")
               case MissingEnvError(_) => InternalServerError()
               case UnexpectedExceptionError(context, _) => InternalServerError(s"Error during $context")
             },
