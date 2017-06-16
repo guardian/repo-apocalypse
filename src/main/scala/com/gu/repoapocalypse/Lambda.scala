@@ -1,13 +1,12 @@
 package com.gu.repoapocalypse
 
-import com.amazonaws.serverless.proxy.internal.model.{AwsProxyRequest, AwsProxyResponse}
 import org.http4s._
 import org.http4s.dsl._
 import org.http4s.twirl._
 
 object Lambda {
 
-  def respond(apiGatewayRequest: AwsProxyRequest): AwsProxyResponse = {
+  def respond(apiGatewayRequest: ApiGatewayRequest): ApiGatewayResponse = {
     ApiGatewayHttp4sAdapter(service)(apiGatewayRequest)
   }
 

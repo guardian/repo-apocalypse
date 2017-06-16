@@ -1,14 +1,15 @@
 package com.gu.repoapocalypse
 
 import cats.data.OptionT
-import com.amazonaws.serverless.proxy.internal.model.{AwsProxyRequest, AwsProxyResponse}
 import fs2.Task
 import org.http4s._
+
+import scala.beans.BeanProperty
 
 object ApiGatewayHttp4sAdapter {
   import collection.JavaConverters._
 
-  def apply(service: HttpService): (AwsProxyRequest => AwsProxyResponse) = { apiGatewayRequest =>
+  def apply(service: HttpService): (ApiGatewayRequest => ApiGatewayResponse) = { apiGatewayRequest =>
     val request = for {
       method <- Method.fromString(apiGatewayRequest.getHttpMethod)
     } yield Request(
@@ -31,11 +32,30 @@ object ApiGatewayHttp4sAdapter {
       response <- OptionT.fromOption[Task](maybeResponse.toOption)
       body <- OptionT(response.body.through(fs2.text.utf8Decode).runLast.map(_.orElse(Some(""))))
     } yield {
-      val apiGatewayResponse = new AwsProxyResponse()
-      apiGatewayResponse.setStatusCode(response.status.code)
-      apiGatewayResponse.setHeaders(response.headers.toList.map(nv => nv.name.value -> nv.value).toMap.asJava)
-      apiGatewayResponse.setBody(body)
-      apiGatewayResponse
+      new ApiGatewayResponse(
+        statusCode = response.status.code,
+        headers = response.headers.toList.map(nv => nv.name.value -> nv.value).toMap.asJava,
+        body = body
+      )
     }).value.unsafeRun().get
+  }
+}
+
+class ApiGatewayResponse(
+  @BeanProperty var statusCode: Int,
+  @BeanProperty var headers: java.util.Map[String, String] = null,
+  @BeanProperty var body: String = null
+)
+class ApiGatewayRequest(
+  @BeanProperty var httpMethod: String = null,
+  @BeanProperty var path: String = null,
+  @BeanProperty var queryStringParameters: java.util.Map[String, String] = null,
+  @BeanProperty var headers: java.util.Map[String, String] = null,
+  @BeanProperty var body: String = null,
+  @BeanProperty var base64Encoded: Boolean = false,
+  @BeanProperty var stageVariables: java.util.Map[String, String] = null
+) {
+  def this() {
+    this(null, null, null, null, null, false, null)
   }
 }

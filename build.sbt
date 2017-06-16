@@ -35,8 +35,6 @@ riffRaffManifestProjectName := "repo-apocalypse"
 resolvers += "Sonatype releases" at "https://oss.sonatype.org/content/repositories/releases"
 
 libraryDependencies ++= Seq(
-  "com.amazonaws" % "aws-lambda-java-core" % "1.1.0",
-  "com.amazonaws.serverless" % "aws-serverless-java-container-core" % "0.4",
   "org.http4s" %% "http4s-dsl" % "0.17.0-M1",
   "org.http4s" %% "http4s-server" % "0.17.0-M1",
   "org.http4s" %% "http4s-blaze-client" % "0.17.0-M1",
@@ -44,8 +42,7 @@ libraryDependencies ++= Seq(
   "org.http4s" %% "http4s-twirl" % "0.17.0-M1",
   "io.circe" %% "circe-generic" % "0.8.0",
   "com.amazonaws" % "aws-java-sdk-s3" % "1.11.144",
-  "org.eclipse.jgit" % "org.eclipse.jgit" % "4.7.1.201706071930-r",
-  "com.47deg" %% "github4s" % "0.15.0"
+  "org.eclipse.jgit" % "org.eclipse.jgit" % "4.7.1.201706071930-r"
 )
 
 initialize := {
