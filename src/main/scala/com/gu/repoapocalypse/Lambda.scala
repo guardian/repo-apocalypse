@@ -1,9 +1,8 @@
 package com.gu.repoapocalypse
 
-import com.amazonaws.serverless.proxy.internal.model.{ AwsProxyRequest, AwsProxyResponse }
+import com.amazonaws.serverless.proxy.internal.model.{AwsProxyRequest, AwsProxyResponse}
 import org.http4s._
 import org.http4s.dsl._
-import org.http4s.Cookie
 import org.http4s.twirl._
 
 object Lambda {
@@ -45,32 +44,4 @@ object Lambda {
 
   import cats.syntax.semigroup._
   val service = noAuthService |+| Auth.middleware(serviceRequiringToken)
-}
-
-object ApiGatewayHttp4sAdapter {
-  import collection.JavaConverters._
-
-  def apply(service: HttpService): (AwsProxyRequest => AwsProxyResponse) = { apiGatewayRequest =>
-    val request = for {
-      method <- Method.fromString(apiGatewayRequest.getHttpMethod)
-    } yield Request(
-      method = method,
-      uri = Uri(
-        path = apiGatewayRequest.getPath,
-        query = Query.fromString(apiGatewayRequest.getQueryString.stripPrefix("?"))
-      ),
-      headers = Headers(apiGatewayRequest.getHeaders.asScala.toList.map {
-        case (k, v) => Header(k, v)
-      }),
-      body = Option(apiGatewayRequest.getBody).map(body => fs2.Stream.emits(body.getBytes)).getOrElse(EmptyBody)
-    )
-
-    val response = service.run(request.right.get).unsafeRun().orNotFound
-
-    val apiGatewayResponse = new AwsProxyResponse()
-    apiGatewayResponse.setStatusCode(response.status.code)
-    apiGatewayResponse.setHeaders(response.headers.toList.map(nv => nv.name.value -> nv.value).toMap.asJava)
-    apiGatewayResponse.setBody(response.body.through(fs2.text.utf8Decode).runLast.unsafeRun().getOrElse(""))
-    apiGatewayResponse
-  }
 }
