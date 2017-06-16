@@ -45,18 +45,14 @@ class ApiGatewayResponse(
   @BeanProperty var headers: java.util.Map[String, String],
   @BeanProperty var body: String
 )
-class ApiGatewayRequest(
-  @BeanProperty var httpMethod: String = null,
-  @BeanProperty var path: String = null,
-  @BeanProperty var queryStringParameters: java.util.Map[String, String] = null,
-  @BeanProperty var headers: java.util.Map[String, String] = null,
-  @BeanProperty var body: String = null,
-  @BeanProperty var base64Encoded: Boolean = false,
+class ApiGatewayRequest {
+  @BeanProperty var httpMethod: String = null
+  @BeanProperty var path: String = null
+  @BeanProperty var queryStringParameters: java.util.Map[String, String] = null
+  @BeanProperty var headers: java.util.Map[String, String] = null
+  @BeanProperty var body: String = null
+  @BeanProperty var base64Encoded: Boolean = false
   @BeanProperty var stageVariables: java.util.Map[String, String] = null
-) {
-  def this() {
-    this(null, null, null, null, null, false, null)
-  }
 
   import collection.JavaConverters._
   def asScalaMap[K,V](m: java.util.Map[K, V]): Map[K, V] = Option(m).map(_.asScala.toMap).getOrElse(Map.empty)
