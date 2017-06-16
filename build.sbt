@@ -14,7 +14,7 @@ scalacOptions ++= Seq(
   "-language:implicitConversions",
   "-unchecked",
   "-Xfatal-warnings",
-  "-Xlint",
+  "-Xlint:-unused,_",
   "-Yno-adapted-args",
   "-Ywarn-dead-code",
   "-Ywarn-numeric-widen",
@@ -22,7 +22,7 @@ scalacOptions ++= Seq(
   "-Xfuture"
 )
 
-enablePlugins(RiffRaffArtifact, JavaAppPackaging)
+enablePlugins(RiffRaffArtifact, JavaAppPackaging, SbtTwirl)
 
 topLevelDirectory in Universal := None
 packageName in Universal := normalizedName.value
@@ -38,8 +38,10 @@ libraryDependencies ++= Seq(
   "com.amazonaws" % "aws-lambda-java-core" % "1.1.0",
   "com.amazonaws.serverless" % "aws-serverless-java-container-core" % "0.4",
   "org.http4s" %% "http4s-dsl" % "0.17.0-M1",
+  "org.http4s" %% "http4s-server" % "0.17.0-M1",
   "org.http4s" %% "http4s-blaze-client" % "0.17.0-M1",
   "org.http4s" %% "http4s-circe" % "0.17.0-M1",
+  "org.http4s" %% "http4s-twirl" % "0.17.0-M1",
   "io.circe" %% "circe-generic" % "0.8.0",
   "com.amazonaws" % "aws-java-sdk-s3" % "1.11.144",
   "org.eclipse.jgit" % "org.eclipse.jgit" % "4.7.1.201706071930-r",
