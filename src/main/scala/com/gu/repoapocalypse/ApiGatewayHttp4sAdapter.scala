@@ -7,23 +7,22 @@ import org.http4s._
 import scala.beans.BeanProperty
 
 object ApiGatewayHttp4sAdapter {
-  import collection.JavaConverters._
-
   def apply(service: HttpService): (ApiGatewayRequest => ApiGatewayResponse) = { apiGatewayRequest =>
     val request = for {
-      method <- Method.fromString(apiGatewayRequest.getHttpMethod)
+      method <- Method.fromString(apiGatewayRequest.httpMethod)
     } yield Request(
       method = method,
       uri = Uri(
-        path = apiGatewayRequest.getPath,
-        query = Query.fromPairs(Option(apiGatewayRequest.getQueryStringParameters).map(_.asScala).getOrElse(Map.empty).toList: _*)
+        path = apiGatewayRequest.path,
+        query = Query.fromPairs(apiGatewayRequest.queryStringParamMap.toList: _*)
       ),
-      headers = Headers(apiGatewayRequest.getHeaders.asScala.toList.map {
+      headers = Headers(apiGatewayRequest.headerMap.toList.map {
         case (k, v) => Header(k, v)
       }),
-      body = Option(apiGatewayRequest.getBody).map(body => fs2.Stream.emits(body.getBytes)).getOrElse(EmptyBody)
+      body = Option(apiGatewayRequest.body).map(body => fs2.Stream.emits(body.getBytes)).getOrElse(EmptyBody)
     )
 
+    import collection.JavaConverters._
     import cats.instances.option._
     import cats.syntax.traverse._
     import fs2.interop.cats._
@@ -43,8 +42,8 @@ object ApiGatewayHttp4sAdapter {
 
 class ApiGatewayResponse(
   @BeanProperty var statusCode: Int,
-  @BeanProperty var headers: java.util.Map[String, String] = null,
-  @BeanProperty var body: String = null
+  @BeanProperty var headers: java.util.Map[String, String],
+  @BeanProperty var body: String
 )
 class ApiGatewayRequest(
   @BeanProperty var httpMethod: String = null,
@@ -58,4 +57,9 @@ class ApiGatewayRequest(
   def this() {
     this(null, null, null, null, null, false, null)
   }
+
+  import collection.JavaConverters._
+  def asScalaMap[K,V](m: java.util.Map[K, V]): Map[K, V] = Option(m).map(_.asScala.toMap).getOrElse(Map.empty)
+  def queryStringParamMap = asScalaMap(queryStringParameters)
+  def headerMap = asScalaMap(headers)
 }
