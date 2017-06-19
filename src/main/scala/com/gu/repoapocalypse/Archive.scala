@@ -14,19 +14,18 @@ object Archive {
   val client = AmazonS3ClientBuilder.standard().withRegion(Regions.EU_WEST_1).build()
   val PARAM_NAME = "repoName"
 
-  def archive(repoName: String, accessToken: String): Either[Error, String] = {
-    val bucketName = sys.env.get("BUCKET_NAME").toRight(MissingEnvError("BUCKET_NAME"))
-
+  def archive(bucketName: String, prefix: String, repoName: String, accessToken: String): Either[Error, String] = {
     for {
-      bucket <- bucketName
       cloneDirectory <- cloneRepo(repoName, accessToken)
       file <- zipAll(cloneDirectory, Paths.get(s"/tmp/${repoName}.zip"))
-      uploadLocation <- upload(bucket, file)
+      uploadLocation <- upload(bucketName, prefix, file)
     } yield uploadLocation
   }
 
-  def upload(bucket: String, path: Path): Either[Error, String] = {
-    val locationDescription = s"s3://$bucket/${path.getFileName}"
+  def upload(bucket: String, prefix: String, path: Path): Either[Error, String] = {
+    val trimmedPrefix = prefix.stripPrefix("/").stripSuffix("/")
+    val prefixWithSlash = if (trimmedPrefix.isEmpty) "" else s"$trimmedPrefix/"
+    val locationDescription = s"s3://$bucket/$prefixWithSlash${path.getFileName}"
     Try {
       client.putObject(bucket, path.getFileName.toString, path.toFile)
     }.toEither

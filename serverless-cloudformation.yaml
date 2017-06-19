@@ -23,10 +23,15 @@ Parameters:
     TargetBucket:
         Description: Bucket to upload archived repositories to
         Type: String
+        Default: ''
+    PathPrefix:
+        Type: String
+        Description: Prefix to apply to filename of archive when uploading to S3 bucket
     GithubClientId:
         Type: String
     GithubClientSecret:
         Type: String
+        NoEcho: true
 
 Resources:
   Lambda:
@@ -61,6 +66,7 @@ Resources:
           BUCKET_NAME: !Ref TargetBucket
           CLIENT_ID: !Ref GithubClientId
           CLIENT_SECRET: !Ref GithubClientSecret
+          PATH_PREFIX: !If
 
 
   API:

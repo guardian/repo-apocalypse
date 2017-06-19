@@ -12,14 +12,17 @@ object Lambda {
 
   val noAuthService = HttpService {
     case GET -> Root / "login" => {
-      Ok(html.login(sys.env("CLIENT_ID")))
+      Ok(html.login(Env.clientId))
     }
 
     case request @ GET -> Root / "callback" => {
-      request.params.get("code").map(Auth.accessTokenFromSessionCode).map(_.flatMap(accessToken =>
-        TemporaryRedirect(uri("/CODE/form")).addCookie(
-          Cookie(name = "access_token", content = accessToken, httpOnly = true)
-        ))).getOrElse(BadRequest(s"Expected 'code' parameter"))
+      request.params.get("code")
+        .map(sessionCode => Auth.accessTokenFromSessionCode(sessionCode, Env.clientId, Env.clientSecret))
+        .map(_.flatMap(accessToken =>
+          TemporaryRedirect(uri("/CODE/form")).addCookie(
+            Cookie(name = "access_token", content = accessToken, httpOnly = true)
+          )
+        )).getOrElse(BadRequest(s"Expected 'code' parameter"))
     }
   }
 
@@ -30,13 +33,19 @@ object Lambda {
     case AuthedRequest(session, request @ POST -> Root / "archive") => {
       request.decode[UrlForm] { formData =>
         formData.getFirst("repoName").map(repoName =>
-          Archive.archive(repoName, session.accessToken).fold(
+          (for {
+            bucket <- Env.bucketName
+            prefix <- Env.s3pathPrefix
+            result <- Archive.archive(bucket, prefix, repoName, session.accessToken)
+          } yield result
+          ).fold(
             {
               case MissingEnvError(_) => InternalServerError()
               case UnexpectedExceptionError(context, _) => InternalServerError(s"Error during $context")
             },
-            result => Ok(result)
-          )).getOrElse(BadRequest(s"Missing required param 'repoName'"))
+            success => Ok(success)
+          )
+        ).getOrElse(BadRequest(s"Missing required param 'repoName'"))
       }
     }
   }

@@ -15,13 +15,13 @@ object Auth {
 
   case class GitHubAuthResponse(access_token: String)
 
-  def accessTokenFromSessionCode(sessionCode: String): Task[String] = {
+  def accessTokenFromSessionCode(sessionCode: String, clientID: String, clientSecret: String): Task[String] = {
     httpClient.expect(Request(
       Method.POST,
       uri("https://github.com/login/oauth/access_token")
         .copy(query = Query.fromPairs(
-          "client_id" -> sys.env("CLIENT_ID"),
-          "client_secret" -> sys.env("CLIENT_SECRET"),
+          "client_id" -> clientID,
+          "client_secret" -> clientSecret,
           "code" -> sessionCode
         ))
     ))(jsonOf[GitHubAuthResponse]).map(_.access_token)
