@@ -66,7 +66,7 @@ Resources:
           BUCKET_NAME: !Ref TargetBucket
           CLIENT_ID: !Ref GithubClientId
           CLIENT_SECRET: !Ref GithubClientSecret
-          PATH_PREFIX: !If
+          PATH_PREFIX: !Ref PathPrefix
 
 
   API:

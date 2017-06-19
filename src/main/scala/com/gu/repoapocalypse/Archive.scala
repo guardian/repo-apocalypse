@@ -27,7 +27,7 @@ object Archive {
     val prefixWithSlash = if (trimmedPrefix.isEmpty) "" else s"$trimmedPrefix/"
     val locationDescription = s"s3://$bucket/$prefixWithSlash${path.getFileName}"
     Try {
-      client.putObject(bucket, path.getFileName.toString, path.toFile)
+      client.putObject(bucket, s"$prefixWithSlash${path.getFileName}", path.toFile)
     }.toEither
       .left.map(t => UnexpectedExceptionError(s"Uploading to $locationDescription", t))
       .map(_ => locationDescription)
