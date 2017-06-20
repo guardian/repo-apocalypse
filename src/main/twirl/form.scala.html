@@ -13,13 +13,17 @@
       </header>
 
       <main class="mdl-layout__content">
-        <form method="POST" action="/@stage/archive">
-          <div class="mdl-textfield mdl-js-textfield">
-            <input type="text" name="repoName" class="mdl-textfield__input">
-            <label for="repoName" class="mdl-textfield__label">Name of repository to archive</label>
+        <div class="mdl-grid">
+          <div class="mdl-cell mdl-cell--12-col mdl-grid">
+            <form method="POST" action="/@stage/archive">
+              <div class="mdl-textfield mdl-js-textfield">
+                <input type="text" name="repoName" class="mdl-textfield__input">
+                <label for="repoName" class="mdl-textfield__label">Name of repository to archive</label>
+              </div>
+              <input class="mdl-button mdl-button--colored mdl-button--raised" type="submit">
+            </form>
           </div>
-          <input class="mdl-button mdl-button--colored mdl-button--raised" type="submit">
-        </form>
+        </div>
       </main>
     </div>
   </body>
