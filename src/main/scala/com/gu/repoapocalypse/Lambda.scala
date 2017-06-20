@@ -1,5 +1,6 @@
 package com.gu.repoapocalypse
 
+import fs2.{Strategy, Task}
 import org.http4s._
 import org.http4s.dsl._
 import org.http4s.twirl._
@@ -38,19 +39,17 @@ object Lambda {
     }
     case AuthedRequest(session, request @ POST -> Root / "archive") => {
       request.decode[UrlForm] { formData =>
-        formData.getFirst("repoName").map(repoName =>
+        formData.getFirst("repoName").map[Task[Response]](repoName =>
           (for {
             bucket <- Env.bucketName
             prefix <- Env.s3pathPrefix
-            result <- Archive.archive(bucket, prefix, repoName, session.accessToken)
-          } yield result
-          ).fold(
-            {
-              case MissingEnvError(_) => InternalServerError()
-              case UnexpectedExceptionError(context, _) => InternalServerError(s"Error during $context")
-            },
-            success => Ok(success)
-          )
+          } yield
+            Archive.archive(bucket, prefix, repoName, session.accessToken)(Strategy.sequential).attempt
+              .flatMap[Response](_.fold(
+                t => InternalServerError(t.toString),
+                location => Ok(location)
+            ))
+          ).getOrElse(InternalServerError("Missing environment variable"))
         ).getOrElse(BadRequest(s"Missing required param 'repoName'"))
       }
     }
