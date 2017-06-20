@@ -12,19 +12,23 @@ object Lambda {
 
   val noAuthService = HttpService {
     case GET -> Root / "login" => {
-      Ok(html.login(Env.clientId))
+      Env.clientId.fold(err => InternalServerError(err.toString), clientId =>
+        Ok(html.login(clientId))
+      )
     }
 
     case request @ GET -> Root / "callback" => {
-      val stage = request.attributes(ApiGatewayHttp4sAdapter.stageKey)
+      val stage = request.attributes.get(ApiGatewayHttp4sAdapter.stageKey).getOrElse("")
       val redirectURI = Uri.fromString(s"/$stage/form").right.get
-      request.params.get("code")
-        .map(sessionCode => Auth.accessTokenFromSessionCode(sessionCode, Env.clientId, Env.clientSecret))
-        .map(_.flatMap(accessToken =>
-          TemporaryRedirect(redirectURI).addCookie(
-            Cookie(name = "access_token", content = accessToken, httpOnly = true)
-          )
-        )).getOrElse(BadRequest(s"Expected 'code' parameter"))
+      Env.clientId.fold(err => InternalServerError(err.toString), clientId =>
+        request.params.get("code")
+          .map(sessionCode => Auth.accessTokenFromSessionCode(sessionCode, clientId, Env.clientSecret))
+          .map(_.flatMap(accessToken =>
+            TemporaryRedirect(redirectURI).addCookie(
+              Cookie(name = "access_token", content = accessToken, httpOnly = true)
+            )
+          )).getOrElse(BadRequest(s"Expected 'code' parameter"))
+      )
     }
   }
 
