@@ -1,10 +1,10 @@
-
+@(stage: String)
 <html>
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
   <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.purple-blue.min.css">
   <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
   <body>
-    <form method="POST" action="/CODE/archive">
+    <form method="POST" action="/@stage/archive">
       <div class="mdl-textfield">
         <input type="text" name="repoName" class="mdl-textfield__input">
         <label for="repoName" class="mdl-textfield__label">Name of repository to archive</label>

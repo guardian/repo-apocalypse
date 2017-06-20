@@ -7,6 +7,8 @@ import org.http4s._
 import scala.beans.BeanProperty
 
 object ApiGatewayHttp4sAdapter {
+  val stageKey = AttributeKey[String]("stage")
+
   def apply(service: HttpService): (ApiGatewayRequest => ApiGatewayResponse) = { apiGatewayRequest =>
     val request = for {
       method <- Method.fromString(apiGatewayRequest.httpMethod)
@@ -19,7 +21,8 @@ object ApiGatewayHttp4sAdapter {
       headers = Headers(apiGatewayRequest.headerMap.toList.map {
         case (k, v) => Header(k, v)
       }),
-      body = Option(apiGatewayRequest.body).map(body => fs2.Stream.emits(body.getBytes)).getOrElse(EmptyBody)
+      body = Option(apiGatewayRequest.body).map(body => fs2.Stream.emits(body.getBytes)).getOrElse(EmptyBody),
+      attributes = AttributeMap(AttributeEntry(stageKey, apiGatewayRequest.requestContext.stage))
     )
 
     import collection.JavaConverters._
@@ -53,9 +56,15 @@ class ApiGatewayRequest {
   @BeanProperty var body: String = null
   @BeanProperty var base64Encoded: Boolean = false
   @BeanProperty var stageVariables: java.util.Map[String, String] = null
+  @BeanProperty var requestContext: ApiGatewayRequestContext = null
 
   import collection.JavaConverters._
   def asScalaMap[K,V](m: java.util.Map[K, V]): Map[K, V] = Option(m).map(_.asScala.toMap).getOrElse(Map.empty)
   def queryStringParamMap = asScalaMap(queryStringParameters)
   def headerMap = asScalaMap(headers)
+}
+class ApiGatewayRequestContext {
+  @BeanProperty var stage: String = null
+
+  override def toString = s"ApiGatewayRequestContext(stage = $stage)"
 }

@@ -16,10 +16,12 @@ object Lambda {
     }
 
     case request @ GET -> Root / "callback" => {
+      val stage = request.attributes(ApiGatewayHttp4sAdapter.stageKey)
+      val redirectURI = Uri.fromString(s"/$stage/form").right.get
       request.params.get("code")
         .map(sessionCode => Auth.accessTokenFromSessionCode(sessionCode, Env.clientId, Env.clientSecret))
         .map(_.flatMap(accessToken =>
-          TemporaryRedirect(uri("/CODE/form")).addCookie(
+          TemporaryRedirect(redirectURI).addCookie(
             Cookie(name = "access_token", content = accessToken, httpOnly = true)
           )
         )).getOrElse(BadRequest(s"Expected 'code' parameter"))
@@ -27,8 +29,8 @@ object Lambda {
   }
 
   val serviceRequiringToken: AuthedService[Session] = AuthedService {
-    case AuthedRequest(_, GET -> Root / "form") => {
-      Ok(html.form())
+    case AuthedRequest(_, request @ GET -> Root / "form") => {
+      Ok(html.form(request.attributes(ApiGatewayHttp4sAdapter.stageKey)))
     }
     case AuthedRequest(session, request @ POST -> Root / "archive") => {
       request.decode[UrlForm] { formData =>
