@@ -5,7 +5,6 @@ Parameters:
     Stack:
         Description: Stack name
         Type: String
-        Default: deploy-tools
     App:
         Description: Application name
         Type: String
