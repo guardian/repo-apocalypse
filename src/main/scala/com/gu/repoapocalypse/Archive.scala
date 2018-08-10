@@ -5,6 +5,7 @@ import java.util.zip.{ZipEntry, ZipOutputStream}
 
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
+import com.amazonaws.services.s3.model.{CanonicalGrantee, Permission}
 import fs2.{Strategy, Task}
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
@@ -25,8 +26,12 @@ object Archive {
     val trimmedPrefix = prefix.stripPrefix("/").stripSuffix("/")
     val prefixWithSlash = if (trimmedPrefix.isEmpty) "" else s"$trimmedPrefix/"
     val locationDescription = s"s3://$bucket/$prefixWithSlash${path.getFileName}"
+    val key = s"$prefixWithSlash${path.getFileName}"
     Task {
-      client.putObject(bucket, s"$prefixWithSlash${path.getFileName}", path.toFile)
+      client.putObject(bucket, key, path.toFile)
+      val acl = client.getObjectAcl(bucket, key)
+      acl.grantPermission(new CanonicalGrantee(acl.getOwner().getId()), Permission.FullControl)
+      client.setObjectAcl(bucket, key, acl)
       locationDescription
     }
   }
