@@ -21,8 +21,8 @@ which will need to be set to run successfully.
 3. From the directory that you unzipped the bare repo to, check that the remote is set up correctly with:
 ```
 my-app$ git remote -v
-origin	https://github.com/guardian/my-app.git (fetch)
-origin	https://github.com/guardian/my-app.git (push)
+origin	git@github.com:guardian/my-app.git (fetch)
+origin	git@github.com:guardian/my-app.git (push)
 ```
 4. If the origin urls above match that of your new repo, skip to step 6.
 5. If the origin urls are not correct then set it to the new github repo with: `git remote set-url origin git@github.com:[org]/[app].git`.
