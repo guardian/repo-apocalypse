@@ -5,6 +5,8 @@ import java.util.zip.{ZipEntry, ZipOutputStream}
 
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
+import com.amazonaws.services.s3.model.PutObjectRequest
+import com.amazonaws.services.s3.model.CannedAccessControlList
 import fs2.{Strategy, Task}
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
@@ -26,7 +28,10 @@ object Archive {
     val prefixWithSlash = if (trimmedPrefix.isEmpty) "" else s"$trimmedPrefix/"
     val locationDescription = s"s3://$bucket/$prefixWithSlash${path.getFileName}"
     Task {
-      client.putObject(bucket, s"$prefixWithSlash${path.getFileName}", path.toFile)
+      val baseRequest = new PutObjectRequest(bucket, s"$prefixWithSlash${path.getFileName}", path.toFile)
+      /* Ensure the bucket owner is granted read and write access to the file */
+      val request = baseRequest.withCannedAcl(CannedAccessControlList.BucketOwnerFullControl)
+      client.putObject(request)
       locationDescription
     }
   }
