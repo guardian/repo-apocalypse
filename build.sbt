@@ -2,7 +2,7 @@ name := "repo-apocalypse"
 description:= "github-project-archiver"
 organization := "com.gu"
 
-scalaVersion in ThisBuild := "2.12.2"
+scalaVersion in ThisBuild := "2.12.10"
 
 scalacOptions in ThisBuild ++= Seq(
   "-deprecation",
