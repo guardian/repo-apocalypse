@@ -1,3 +1,6 @@
+# DEPRECATION NOTICE
+**Please be aware that repo-apocalyse is considered deprecated, as the bulk of its use case is covered by Github's [archiving functionality](https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/archiving-a-github-repository/archiving-repositories).**
+
 # repo-apocalypse
 
 _A time to be [born](https://github.com/guardian/repo-genesis), and a time to die_
